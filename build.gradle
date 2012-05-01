@@ -1,0 +1,53 @@
+apply plugin: 'groovy'
+apply plugin: 'idea'
+
+tasks.idea.dependsOn(cleanIdea)
+
+version = 'excentric-0.5.1-DEV'
+sonarVersion = '2.13.1'
+targetCompatibility = '1.6'
+sourceCompatibility = '1.6'
+
+repositories.mavenCentral()
+
+configurations.add('bundled') {
+    transitive = false
+}
+
+dependencies {
+    groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '1.7.5'
+
+    bundled group: 'org.codenarc', name: 'CodeNarc', version: '0.16.1'
+    bundled group: 'org.gmetrics', name: 'GMetrics', version: '0.4'
+    bundled configurations.groovy
+
+    compile group: 'org.codehaus.sonar', name: 'sonar-plugin-api', version: sonarVersion
+    compile group: 'org.codehaus.sonar.plugins', name: 'sonar-surefire-plugin', version: sonarVersion, ext: 'jar'
+
+    compile group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
+    compile group: 'org.codehaus.sonar', name: 'sonar-ws-client', version: sonarVersion
+
+    compile configurations.bundled
+
+    testCompile group: 'org.codehaus.sonar', name: 'sonar-testing-harness', version: sonarVersion
+    testCompile group: 'junit', name: 'junit', version: '4.8.1'
+    testCompile group: 'junit', name: 'junit', version: '4.8.1'
+    testCompile group: 'org.codehaus.sonar', name: 'sonar-update-center-common', version: '1.0'
+}
+
+jar {
+    manifest {
+        attributes([
+                'Plugin-Class': 'org.sonar.plugins.groovy.GroovyPlugin',
+                'Plugin-Dependencies': 'META-INF/lib/GMetrics-0.4.jar META-INF/lib/CodeNarc-0.16.1.jar META-INF/lib/groovy-all-1.7.5.jar',
+                'Sonar-Version': sonarVersion,
+                'Plugin-Name': 'Groovy',
+                'Plugin-Version': version,
+                'Plugin-ChildFirstClassLoader': 'true',
+        ])
+    }
+    metaInf {
+        into 'lib'
+        from configurations.bundled
+    }
+}
